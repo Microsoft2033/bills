@@ -1,4 +1,4 @@
-import { HistoryTab } from "@/components/HiatoryTab"
+import { HistoryTab } from "@/components/HistoryTab"
 
 // delete this later
 const dummy = [1, 2, 3, 4];
