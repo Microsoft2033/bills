@@ -1,5 +1,5 @@
 "use client"
-import { useFormik, UseFormik } from "formik";
+import { useFormik} from "formik";
 import * as yup from "yup";
 import { TextField,Button } from "@mui/material";
 import { FaUserEdit } from "react-icons/fa";
