@@ -1,6 +1,15 @@
 "use client"
 import {useState,useEffect} from "react";
 import { TextField } from "@mui/material";
+import { db } from "@/components/config/firebase.config";
+import { addDoc, collection } from "firebase/firestore";
+import { CircularProgress } from "@mui/material";
+import {useFormik} from "formik";
+import * as yup from "yup";
+const schema = yup.object().shape({
+    amount:yup.number(). required().min(1000),
+})
+
 const duration = [
     { id: "7", days:7 },
 { id: "30", days: 30 },
@@ -9,17 +18,42 @@ const duration = [
 export default function borrow() {
     const [clickedRate, setClickedRate] = useState(undefined);
     const [rate, setrate] = useState(0);
-    const [amount, setamount] = useState(undefined);
-    const [payback, setpayback] = useState(undefined);
-    const [loadDate,setloadDate] = useState(0);
+    const [payback, setpayback] = useState(undefined);4
+    const [loadDate, setloadDate] = useState(0);
+    const [opsprogress, setopsprogress] = useState(false);
     
+    const {handleSubmit, handleChange, values, touched,errors} = useFormik({
+        initialValues: {
+            amount:undefined
+        },
+        onSubmit: async () => {
+            setopsprogress(true);
+            await addDoc(collection(db, "loans"), {
+                user: "dummy",
+                amount: values.amount,
+                payback: payback,
+                rate: rate,
+                duration: loadDate,
+                timecreated: new Date().getTime()
+            }).then(() => {
+                setopsprogress(false);
+                alert(`you have successfully borrowed ${values.amount} at the rate of ${rate}`)
+            })
+                .catch(e => {
+                    setopsprogress(false);
+                    console.error(e);
+                    alert("you have encountered an unknown error")
+            })
+        },
+        validationSchema:schema
+    })
     useEffect(() => {
-        if (amount >= 1) {
-            const Interest = (rate * amount) / 100;
-            setpayback(amount + Interest)
+        if (values.amount >= 1) {
+            const Interest = (rate * values.amount) / 100;
+            setpayback(values.amount + Interest)
             
         }
-    }, [amount, rate]
+    }, [values.amount, rate]
     );
     
     //  console.log(amount);
@@ -31,7 +65,7 @@ export default function borrow() {
                 <blockquote className="border-b border-gray-200 pb-3">
                     <span className="font-thin text-lg text-blue-700">Get an Instant Loan</span>
                 </blockquote>
-                <form>
+                <form onSubmit={handleSubmit}>
                     <div className="flex flex-col gap-1">
                         <label htmlFor="name" className="text-grey-600 text-xs">How much Do you want to borrow?</label>
                         <TextField
@@ -39,12 +73,12 @@ export default function borrow() {
                             type="number"
                             variaant="oulined"
                             placeholder="loan amount"
-                            value={amount}
-                            onChange={(text)=>setamount(Number(text.target.value))}
+                            value={values.amount}
+                            onChange={handleChange}
                         />
+                        {touched.amount && errors.amount ? <span className="text-xs text-red-500">{errors.amount }</span> : null}
                     </div>
-                </form>
-                <div className="border-dash border border-blue-500 p-4 rounded-md">
+                    <div className="border-dash border border-blue-500 p-4 rounded-md">
                     <p className="tetx-blue-700 text-sm mb-3">choose loan duration</p>
                     <ul className="grid grid-cols-3 gap-2 ">
                         {
@@ -89,10 +123,14 @@ export default function borrow() {
                     <p className="text-blue-50">you will pay back</p>
                     <p className="text-4xl text-white"> ₦{ payback}</p>
                 </div>
-                <div>
-<button className="p-2 rounded-md bg-blue-500 text-white text-xl uppercase">Get loan</button>
+                
+                    <div className="flex items-center gap-1">
+                    <button type="submit" className="p-2 rounded-md bg-blue-500 text-white text-xl uppercase">Get loan</button>
+                    <CircularProgress style={{ display: !opsprogress ? "none" : "flex" }} />
                 </div>
+                </form>
             </div>
+                
 
         </main>
     )
