@@ -1,4 +1,5 @@
 "use client"
+
 import React from "react";
 import { db } from "@/components/config/firebase.config";
 import { getDocs, collection, orderBy } from "firebase/firestore";
@@ -26,7 +27,9 @@ export default function History() {
                 <h1 className="text-xl text-gray-800 mb-4">My loan History</h1>
                 <div className="flex flex-col gap-4">
                     {/* <HistoryTab/> */}
-                    {loans.map(loan => <HistoryTab amount={5000} rate={12.5} duration={30} type="personal" date="13 Jul 2024" key={loan}/>)}
+                    {loans.map(loan => <HistoryTab
+                        docId={loan.id}
+                        amount={5000} rate={12.5} duration={30} type="personal" date="13 Jul 2024" key={loan} />)}
 
                 </div>
             </div>
