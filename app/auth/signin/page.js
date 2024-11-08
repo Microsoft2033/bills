@@ -13,9 +13,9 @@ export default function Auth() {
 
     React.useEffect(()=> {
         if(session?.user){
-            router.push("/dashbaoard/borrow")
+            router.push("/dashboard/borrow")
         }
-    },[])
+    },[session])
     // console.log(session);
     
     return (
