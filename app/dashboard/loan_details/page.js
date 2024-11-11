@@ -3,7 +3,8 @@ import React from "react";
 import { db } from "@/components/config/firebase.config";
 import { doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@mui/material";
-import { useSearchParams } from "next/navigation";
+import { AppContext } from "@/components/config/context.config";
+import Router, { useRouter } from "next/navigation";
 import {TextField,Button} from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -13,15 +14,23 @@ const schema = yup.object().shape ({
     amount:yup.number().required().min(1),
 });
 
-export default function History () {
+export default function History() {
+    const {loanDocId} = React.useContext(AppContext)
     const [loan, setLoan] = React.useState(null);
     const [totaloffsets, setTotaloffsets] = React.useState(0);
 
-const docId = useSearchParams().get("doc_id")
+    const router = useRouter();
+    React.useEffect(() => {
+        if (loanDocId === null) {
+            router.push("/dashboard/history")
+        }
+    }, []);
+
+
 
     React.useEffect(() => {
        const handleDocFetch = async () => {
-        const docRef = doc (db, "loans", docId);
+        const docRef = doc (db, "loans", loanDocId);
 
         const res = await getDoc (docRef);
 
