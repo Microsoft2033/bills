@@ -1,23 +1,19 @@
-"use client"
-import React from "react";
+"use serer"
+import { redirect } from "next/navigation";
 import { Button } from "@mui/material";
 import Link from "next/link";
+import { auth, signIn } from "@/auth";
 import { FaGoogle } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
-export default function Auth() {
-    const { data: session } = useSession();
-    const router = useRouter();
 
-    React.useEffect(()=> {
-        if(session?.user){
-            router.push("/dashboard/borrow")
-        }
-    },[session])
-    console.log(session);
-    
+export default  async function Auth() {
+    const session = await auth();
+
+    if (session) {
+        redirect("/dashboard/borrow")
+    }
+
     return (
         <main className=" min-h-[520px] flex justify-center bg-gradient-to-b from-gray-50 to-gray-300 py-8 px-2">
             <article>
@@ -27,8 +23,9 @@ export default function Auth() {
                     {/* DELETE THIS */}
                     {/* <button onClick={()=>signOut()}>sign out</button> */}
                     {/* DELETE THIS */}
-                    <form action={() => {
-                        signIn("google")
+                    <form action={async () => {
+                        "use server"
+                         await signIn("google")
                     }}
                     className="mb-2">
                         {/* <Button></Button> */}
