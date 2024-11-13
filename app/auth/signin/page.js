@@ -16,7 +16,7 @@ export default function Auth() {
             router.push("/dashboard/borrow")
         }
     },[session])
-    // console.log(session);
+    console.log(session);
     
     return (
         <main className=" min-h-[520px] flex justify-center bg-gradient-to-b from-gray-50 to-gray-300 py-8 px-2">

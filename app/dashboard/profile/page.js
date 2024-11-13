@@ -14,8 +14,8 @@ export default function profile() {
                 </div>
                 <p className=" py-3 border-b border-b-sky-200">{session?.user?.name}</p>
                 <p className=" py-3 border-b border-b-sky-200">{session?.user?.email}</p>
-                <p className=" py-3 border-b border-b-sky-200"> customer ID{session?.user?.id}</p>
-                <Button variant="contained" color="error" onClick={()=>signOut}>log out</Button>
+                <p className=" py-3 border-b border-b-sky-200"> customer ID:{session?.user?.id}</p>
+                <Button variant="contained" color="error" onClick={()=>signOut()}>log out</Button>
                 <Link className="p-2 bg-blue-700 rounded-md text-lg text-white text-center" href="/dashboard/update-profile">update profile</Link>
             </div>
             </main>
