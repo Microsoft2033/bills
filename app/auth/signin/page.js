@@ -1,4 +1,4 @@
-"use serer"
+"use server"
 import { redirect } from "next/navigation";
 import { Button } from "@mui/material";
 import Link from "next/link";

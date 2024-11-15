@@ -18,7 +18,7 @@ const duration = [
     { id: "90", days: 90 },
 ];
     
-export  function Borrow(userId) {
+export  function Borrow({userId}) {
     const [clickedRate, setClickedRate] = useState(undefined);
     const [rate, setrate] = useState(0);
     const [payback, setpayback] = useState(undefined);
