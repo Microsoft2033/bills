@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from "react";
 import { db } from "@/components/config/firebase.config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc , updateDoc,addDoc,collection} from "firebase/firestore";
 import { Skeleton } from "@mui/material";
 import { AppContext } from "@/components/config/context.config";
 import Router, { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import {TextField,Button} from "@mui/material";
 import { useFormik } from "formik";
 import { FlutterWaveButton, closePaymentModal } from 'flutterwave-react-v3';
 import * as yup from "yup";
+import { sumFromArray } from "@/utils/sum_from_arrayy";
 
 
 const schema = yup.object().shape ({
@@ -18,8 +19,9 @@ const schema = yup.object().shape ({
 export default function LoanDetails({user}) {
     const {loanDocId} = React.useContext(AppContext)
     const [loan, setLoan] = React.useState(null);
-    const [totaloffsets, setTotaloffsets] = React.useState(0);
-    const [validateAmount,setValidteAmount] = React.useState(false)
+    const [offSets, setOffSets] = React.useState([]);
+    const [totalOffSets, setTotalOffSets] = React.useState(0);
+    const [validateAmount, setValidteAmount] = React.useState(false);
 
     const router = useRouter();
     React.useEffect(() => {
@@ -27,8 +29,6 @@ export default function LoanDetails({user}) {
             router.push("/dashboard/history")
         }
     }, []);
-
-
 
     React.useEffect(() => {
        const handleDocFetch = async () => {
@@ -42,12 +42,18 @@ export default function LoanDetails({user}) {
             alert ("Invalid request ID")
 
             }
-
-       }
+        }
+        
     //    call the function to execute
        handleDocFetch()
     }, []);
 
+    // retrieve loan offsets, to be used in update
+     React.useEffect(() => {
+         loan !== null ? setOffSets(loan.offsets) : null;
+         loan?.offsets ? setTotalOffSets(sumFromArray(loan.offsets)) : null;
+     }, [loan]);
+    
     const { handleSubmit, handleChange, touched, errors, values } = useFormik({
         initialValues: { amount: undefined },
         onSubmit: () => {
@@ -69,7 +75,7 @@ export default function LoanDetails({user}) {
     const config = {
     public_key: 'FLWPUBK_TEST-07eb955aba643e63f3c057bd00d016ff-X',
     tx_ref: Date.now(),
-    amount:values.amount ,
+    amount:Math.round(values.amount),
     currency: 'NGN',
     payment_options: 'card,mobilemoney,ussd',
     customer: {
@@ -87,8 +93,27 @@ export default function LoanDetails({user}) {
     const fwConfig = {
     ...config,
     text: 'MAKE PAYMENT',
-    callback: (response) => {
-       console.log(response);
+    callback: async (response) => {
+        const docId = await addDoc(collection(db, "payment"), {
+            amount: response.amount,
+            responseCode: response.charge_response_code,
+            currency: response.currency,
+            flwRef: response.flw_ref,
+            txRef: response.tx_ref,
+            status: response.status,
+            user: user.id,
+            loanId: loanDocId,
+            time: new Date().getTime()
+        });
+
+        const reLoanOffSets = offSets;
+        reLoanOffSets.push({
+            amount: values.amount,
+            paymentDocId: docId.id
+        })
+        await updateDoc(doc(db, "loans", loanDocId), {
+            offsets: reLoanOffSets
+        });
       closePaymentModal() // this will close the modal programmatically
     },
     onClose: () => {},
@@ -125,14 +150,16 @@ export default function LoanDetails({user}) {
                         <li className="text-lg text-gray-700 text-end">{}</li>
                         </ul>           
                     <ul className="grid grid-cols-2 pb-3 mb-3 border-b border-gray-100">
-                        <li className="text-lg text-gray-700 uppercase">Total Upsets</li>
-                        <li className="text-lg text-gray-700 text-end">#{}</li>
+                        <li className="text-lg text-gray-700 uppercase">Total Offsets</li>
+                            <li className="text-lg text-gray-700 text-end">
+                                # {totalOffSets}
+                            </li>
                         </ul>    
 
                         <form 
 
                         onSubmit={handleSubmit} 
-                        style={{display:false ? "none" : "block"}}
+                        style={{display:totalOffSets >= loan.payback ? "none" : "block"}}
                         className="bg-gray-200 p-4 rounded-md">
 
                     <div className="flex flex-col gap-1 mb-2">

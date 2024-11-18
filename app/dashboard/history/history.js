@@ -38,7 +38,12 @@ export default function History({userId}) {
                     {/* <HistoryTab/> */}
                     {loans.map(loan => <HistoryTab
                         docId={loan.id}
-                        amount={5000} rate={12.5} duration={30} type="personal" timestamp={loan.data.timecreated} key={loan} />)}
+                        amount={loan.data.amount}
+                        rate={loan.data.rate}
+                        duration={loan.data.duration}
+                        type="personal"
+                        timestamp={loan.data.timecreated}
+                        key={loan} />)}
 
                 </div>
             </div>
